@@ -13,7 +13,29 @@ const jwt = require('jsonwebtoken');
 const helmet = require('helmet');
 const rateLimit = require("express-rate-limit");
 const crypto = require('crypto');
+const Sentry = require('@sentry/node');
+const Tracing = require('@sentry/tracing');
 require('dotenv').config();
+
+// sentry init
+Sentry.init({
+   dsn: "https://2d033bcf96e54300b124d8ff802b2488@o556223.ingest.sentry.io/5686799",
+   integrations: [
+     // enable HTTP calls tracing
+     new Sentry.Integrations.Http({ tracing: true }),
+     // enable Express.js middleware tracing
+     new Tracing.Integrations.Express({ app }),
+   ],
+ 
+   tracesSampleRate: 1.0,
+});
+
+
+// RequestHandler creates a separate execution context using domains, so that every
+// transaction/span/breadcrumb is attached to its own Hub instance
+app.use(Sentry.Handlers.requestHandler());
+// TracingHandler creates a trace for every incoming request
+app.use(Sentry.Handlers.tracingHandler());
 
 
 // server config
@@ -39,11 +61,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 if (process.env.NODE_ENV === "production") {
-   app.use(express.static(path.join(__dirname, "build")));
-   app.get("*", (request, response) => {
-     response.sendFile(path.join(__dirname, "build", "index.html"));
-   });
-
    app.use((req, res, next) => {
       res.locals.nonce = crypto.randomBytes(16).toString("hex");
       next();
@@ -69,8 +86,6 @@ if (process.env.NODE_ENV === "production") {
    
    app.use(limiter);
 
- }else {
-   app.use(express.static(path.join(__dirname, 'public')));
  }
 
 // Schemas
@@ -213,5 +228,7 @@ app.post('/logout', (req,res) => {
 app.get('/ping', (req,res) => {
    return res.send('pong');
 });
+
+app.use(Sentry.Handlers.errorHandler());
 
 app.listen(process.env.PORT || 1998, () => console.log("Running on port " + process.env.PORT || 1998));

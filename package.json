@@ -9,6 +9,8 @@
   "author": "Branislav Buna",
   "license": "ISC",
   "dependencies": {
+    "@sentry/node": "^6.2.3",
+    "@sentry/tracing": "^6.2.3",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
