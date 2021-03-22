@@ -39,11 +39,20 @@ app.use(Sentry.Handlers.tracingHandler());
 
 
 // server config
-app.use(cors({
-   origin: "http://localhost:1999", // <-- location of the react app were connecting to
-   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-   credentials: true,
-}));
+
+if(process.env.NODE_ENV === "production") {
+   app.use(cors({
+      origin: "https://budgeter.club", // <-- location of the react app were connecting to
+      methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+      credentials: true,
+   }));
+}else {
+   app.use(cors({
+      origin: "http://localhost:3000", // <-- location of the react app were connecting to
+      methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+      credentials: true,
+   }));
+}
 
 app.enable('trust proxy');
 
