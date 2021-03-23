@@ -237,9 +237,11 @@ app.post('/logout', (req,res) => {
 app.post('/deleteUser', (req, res) => {
    if(req.body !== {}){
       try {
-         User.findOneAndDelete({username: req.body.username}, (err, doc) => {
+         User.findOneAndDelete({username: req.body.username}, async (err, doc) => {
             if(err) throw err;
             if(doc) {
+               // also remove all recorded data for requested user
+               await Spending.deleteMany({username: req.body.username});
                res.send('Your account was successfuly deleted');
             }
          });
