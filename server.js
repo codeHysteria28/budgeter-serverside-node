@@ -233,6 +233,23 @@ app.post('/logout', (req,res) => {
    });
 });
 
+// deleting user
+app.post('/deleteUser', (req, res) => {
+   if(req.body !== {}){
+      try {
+         User.findOneAndDelete({username: req.body.username}, (err, doc) => {
+            if(err) throw err;
+            if(doc) {
+               res.send('Your account was successfuly deleted');
+            }
+         });
+      } catch (error) {
+         console.log(error);
+         res.send(error);
+      }
+   }
+});
+
 // backend functionality test
 app.get('/ping', (req,res) => {
    return res.send('pong');
