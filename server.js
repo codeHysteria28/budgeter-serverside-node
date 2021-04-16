@@ -40,7 +40,7 @@ app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 
 // multer config
-let storage = multer.diskStorage({
+let storage = multer.memoryStorage({
    destination: (req, file, cb) => {
       cb(null, 'uploads/');
    },
