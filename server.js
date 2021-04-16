@@ -15,6 +15,8 @@ const rateLimit = require("express-rate-limit");
 const crypto = require('crypto');
 const Sentry = require('@sentry/node');
 const Tracing = require('@sentry/tracing');
+const multer = require('multer');
+const fs = require('fs');
 require('dotenv').config();
 
 // sentry init
@@ -37,6 +39,31 @@ app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler());
 
+// multer config
+let storage = multer.diskStorage({
+   destination: (req, file, cb) => {
+      cb(null, 'uploads/');
+   },
+   filename: (req, file, cb) => {
+      cb(null, Date.now() + '-' + file.originalname);
+   }
+});
+
+let upload = multer({
+   storage: storage,
+   fileFilter: (req, file, callback) => {
+      if(file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
+         callback(null, true);
+      }else {
+         console.log('not support file');
+         callback(null, false);
+      }
+   },
+   limits: {
+      fileSize: 1024 * 1024 * 2
+   }
+});
+
 
 // server config
 
@@ -57,7 +84,7 @@ if(process.env.NODE_ENV === "production") {
 app.enable('trust proxy');
 
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(session({
    secret: "secretcode",
@@ -100,6 +127,7 @@ if (process.env.NODE_ENV === "production") {
 // Schemas
 const User = require('./Schemas/User');
 const Spending = require('./Schemas/SpendingTable');
+const Avatar = require('./Schemas/Avatar');
 
 db.on('error', console.error.bind(console, "mongo conn err"));
 
@@ -123,6 +151,31 @@ app.post('/add_spending', (req,res) => {
    }else {
       res.send('Some error happened, try again later');
    }
+});
+
+// avatar upload
+app.post('/add_avatar', upload.single('avatar'), (req,res) => {
+   const avatar = new Avatar({
+      avatar: fs.readFileSync(req.file.path),
+      contentType: req.file.mimetype,
+      username: req.body.username
+   });
+
+   avatar.save();
+   res.send('kk');
+});
+
+app.post('/get_avatar', (req,res) => {
+      if(req.body !== {}){
+         const username = req.body.user;
+
+         Avatar.findOne({username: username}, (err, avatar) => {
+            if(err) throw err;
+            if(avatar){
+               res.send(avatar)
+            }
+         })
+      }
 });
 
 // login user
