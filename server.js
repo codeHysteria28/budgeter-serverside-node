@@ -39,8 +39,8 @@ app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler());
 
-// multer config
-let storage = multer.memoryStorage({
+//multer config
+let storage = multer.diskStorage({
    destination: (req, file, cb) => {
       cb(null, 'uploads/');
    },
@@ -162,17 +162,16 @@ app.post('/add_avatar', upload.single('avatar'), (req,res) => {
    });
 
    avatar.save();
-   res.send('kk');
+   res.send('Avatar uploaded successfully');
 });
 
 app.post('/get_avatar', (req,res) => {
       if(req.body !== {}){
          const username = req.body.user;
-
-         Avatar.findOne({username: username}, (err, avatar) => {
+         Avatar.findOne({username: username}, {}, {sort: {'_id': -1}}, (err, doc) => {
             if(err) throw err;
-            if(avatar){
-               res.send(avatar)
+            if(doc){
+               res.send(doc)
             }
          })
       }
