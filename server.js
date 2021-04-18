@@ -155,14 +155,19 @@ app.post('/add_spending', (req,res) => {
 
 // avatar upload
 app.post('/add_avatar', upload.single('avatar'), (req,res) => {
-   const avatar = new Avatar({
-      avatar: fs.readFileSync(req.file.path),
-      contentType: req.file.mimetype,
-      username: req.body.username
-   });
-
-   avatar.save();
-   res.send('Avatar uploaded successfully');
+   try {
+      const avatar = new Avatar({
+         avatar: fs.readFileSync(req.file.path),
+         contentType: req.file.mimetype,
+         username: req.body.username
+      });
+   
+      avatar.save();
+      res.send('success');
+   } catch (error) {
+      console.log(error);
+      res.send('error');
+   }
 });
 
 app.post('/get_avatar', (req,res) => {
@@ -174,6 +179,8 @@ app.post('/get_avatar', (req,res) => {
                res.send(doc)
             }
          })
+      }else {
+         res.send('error with getting avatar');
       }
 });
 
@@ -263,7 +270,7 @@ app.post('/getProfile', (req,res) => {
                   fullName: doc.fullName,
                   email: doc.email,
                   phone: doc.phone,
-                  address: doc.address,
+                  monthlyBudget: doc.monthlyBudget,
                   created_at: doc.created_at
                }
                res.send(new_doc);
@@ -301,6 +308,24 @@ app.post('/deleteUser', (req, res) => {
          console.log(error);
          res.send(error);
       }
+   }
+});
+
+app.post('/changeBudget', (req,res) => {
+   if(req.body !== {}){
+      try {
+         User.findOneAndUpdate({username: req.body.username}, {monthlyBudget: req.body.new_budget}, {upsert: true}, (err,doc) => {
+            if(err) throw err;
+            if(doc) {
+               res.send('success');
+            }
+         });
+      }catch(err) {
+         console.log(err);
+         res.send(err);
+      }
+   }else {
+      res.send('error');
    }
 });
 
