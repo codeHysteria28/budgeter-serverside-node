@@ -240,8 +240,6 @@ app.post('/register', (req,res) => {
                   monthlyBudget: req.body.budget,
                   fullName: req.body.fullName,
                   email: req.body.email,
-                  phone: req.body.phone,
-                  address: req.body.address,
                   conf_password: conf_password,
                   created_at: req.body.created_at
                });
@@ -269,7 +267,6 @@ app.post('/getProfile', (req,res) => {
                const new_doc = {
                   fullName: doc.fullName,
                   email: doc.email,
-                  phone: doc.phone,
                   monthlyBudget: doc.monthlyBudget,
                   created_at: doc.created_at
                }

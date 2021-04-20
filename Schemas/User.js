@@ -7,8 +7,6 @@ const UserSchema = new Schema({
     monthlyBudget: {type: Number, required: false},
     fullName: {type: String, required: true},
     email: {type: String, required: true},
-    phone: {type: String, required: false},
-    address: {type: String, required: false},
     conf_password: {type: String, required: true},
     created_at: {type: String, required: true}
 },{ timestamps: false, collection: 'user_login' });
