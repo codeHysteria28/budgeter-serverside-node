@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/4c5c36f7-a8a8-437a-9c95-a9c067a57f38/resourceGroups/budgeterBE_RG/providers/Microsoft.Web/sites/budgeterBEnodejs",
+    "appService.deploySubpath": "."
+}
