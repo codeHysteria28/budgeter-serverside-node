@@ -16,6 +16,7 @@ const crypto = require('crypto');
 const Sentry = require('@sentry/node');
 const Tracing = require('@sentry/tracing');
 const multer = require('multer');
+const multerAzure = require('multer-azure');
 const fs = require('fs');
 require('dotenv').config();
 
@@ -39,18 +40,17 @@ app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler());
 
-//multer config
-let storage = multer.diskStorage({
-   destination: (req, file, cb) => {
-      cb(null, 'uploads/');
-   },
-   filename: (req, file, cb) => {
-      cb(null, Date.now() + '-' + file.originalname);
-   }
-});
-
 let upload = multer({
-   storage: storage,
+   storage: multerAzure({
+      connectionString: process.env.storage_connection_string,
+      account: process.env.storage_name,
+      key: process.env.storage_key,
+      container: process.env.storage_container,
+      blobPathResolver: function(req, file, callback) {
+         let blobPath = file.originalname;
+         callback(null, blobPath);
+      }
+   }),
    fileFilter: (req, file, callback) => {
       if(file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
          callback(null, true);
@@ -63,7 +63,6 @@ let upload = multer({
       fileSize: 1024 * 1024 * 2
    }
 });
-
 
 // server config
 
@@ -157,7 +156,7 @@ app.post('/add_spending', (req,res) => {
 app.post('/add_avatar', upload.single('avatar'), (req,res) => {
    try {
       const avatar = new Avatar({
-         avatar: fs.readFileSync(req.file.path),
+         avatar: process.env.storage_url + req.file.originalname,
          contentType: req.file.mimetype,
          username: req.body.username
       });
